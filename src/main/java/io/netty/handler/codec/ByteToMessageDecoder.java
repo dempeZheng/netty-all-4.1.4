@@ -27,6 +27,7 @@ import io.netty.util.internal.StringUtil;
 import java.util.List;
 
 /**
+ * 将ByteBuf解码为Message的抽象类，处理了半包消息问题
  * {@link ChannelInboundHandlerAdapter} which decodes bytes in a stream-like fashion from one {@link ByteBuf} to an
  * other Message type.
  *
@@ -249,14 +250,14 @@ public abstract class ByteToMessageDecoder extends ChannelInboundHandlerAdapter 
                     // 将data复制到cumulation中
                     cumulation = cumulator.cumulate(ctx.alloc(), cumulation, data);
                 }
-                // 循环调用decode解码，直到cumulation不可读
+                // 循环调用decode解码，直到decode方法read完整个cumulation流
                 callDecode(ctx, cumulation, out);
             } catch (DecoderException e) {
                 throw e;
             } catch (Throwable t) {
                 throw new DecoderException(t);
             } finally {
-                // finally处理出现异常的清理工作
+                // finally处理出现清理工作
                 if (cumulation != null && !cumulation.isReadable()) {
                     numReads = 0;
                     cumulation.release();
@@ -428,11 +429,11 @@ public abstract class ByteToMessageDecoder extends ChannelInboundHandlerAdapter 
 
                 //  decode(ctx, in, out)如果没解到完整的包
                 if (outSize == out.size()) {
-                    // 当decode方法什么都没解，则break
+                    // 当decode方法什么都没解（decode方法解到半包消息，便会不作任何处理，则会进到if逻辑），则break
                     if (oldInputLength == in.readableBytes()) {
                         break;
                     } else {
-                        // 如果仅仅只是解了半包，那么就继续解
+                        // 如果decode的流没有读完，则继续读
                         continue;
                     }
                 }
