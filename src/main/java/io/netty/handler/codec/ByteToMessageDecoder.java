@@ -235,22 +235,28 @@ public abstract class ByteToMessageDecoder extends ChannelInboundHandlerAdapter 
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+        //如果msg的类型是ByteBuf则解码
         if (msg instanceof ByteBuf) {
+            //
             CodecOutputList out = CodecOutputList.newInstance();
             try {
                 ByteBuf data = (ByteBuf) msg;
                 first = cumulation == null;
+                // 是否某个消息的第一条流（tcp有粘包拆包的问题，一个msg可能会拆分为多个流传输过来）
                 if (first) {
                     cumulation = data;
                 } else {
+                    // 将data复制到cumulation中
                     cumulation = cumulator.cumulate(ctx.alloc(), cumulation, data);
                 }
+                // 循环调用decode解码，直到cumulation不可读
                 callDecode(ctx, cumulation, out);
             } catch (DecoderException e) {
                 throw e;
             } catch (Throwable t) {
                 throw new DecoderException(t);
             } finally {
+                // finally处理出现异常的清理工作
                 if (cumulation != null && !cumulation.isReadable()) {
                     numReads = 0;
                     cumulation.release();
@@ -268,6 +274,7 @@ public abstract class ByteToMessageDecoder extends ChannelInboundHandlerAdapter 
                 out.recycle();
             }
         } else {
+            // 对于非ByteBuf类型的msg，直接透传给下一个handler的channelRead方法
             ctx.fireChannelRead(msg);
         }
     }
@@ -392,6 +399,7 @@ public abstract class ByteToMessageDecoder extends ChannelInboundHandlerAdapter 
             while (in.isReadable()) {
                 int outSize = out.size();
 
+                // 如果out列表中有已经解码完成的对象，将消息透传到下面的handler，并清空out
                 if (outSize > 0) {
                     fireChannelRead(ctx, out, outSize);
                     out.clear();
@@ -418,14 +426,18 @@ public abstract class ByteToMessageDecoder extends ChannelInboundHandlerAdapter 
                     break;
                 }
 
+                //  decode(ctx, in, out)如果没解到完整的包
                 if (outSize == out.size()) {
+                    // 当decode方法什么都没解，则break
                     if (oldInputLength == in.readableBytes()) {
                         break;
                     } else {
+                        // 如果仅仅只是解了半包，那么就继续解
                         continue;
                     }
                 }
-
+                // 下面的都是解到整包的情况
+                //解到整包，但是decod方法没有读取ByteBuf里面任何字节，则抛出异常
                 if (oldInputLength == in.readableBytes()) {
                     throw new DecoderException(
                             StringUtil.simpleClassName(getClass()) +
