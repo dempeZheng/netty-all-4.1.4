@@ -466,6 +466,15 @@ public abstract class ByteToMessageDecoder extends ChannelInboundHandlerAdapter 
      * @param out           the {@link List} to which decoded messages should be added
      * @throws Exception    is thrown if an error accour
      */
+    /**
+     * 实现这个方法处理解包逻辑
+     * 注意的地方：
+     * 当字节流非整包消息
+     * @param ctx
+     * @param in
+     * @param out
+     * @throws Exception
+     */
     protected abstract void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception;
 
     /**
