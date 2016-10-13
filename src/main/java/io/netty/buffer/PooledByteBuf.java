@@ -57,7 +57,6 @@ abstract class PooledByteBuf<T> extends AbstractReferenceCountedByteBuf {
 
     void initUnpooled(PoolChunk<T> chunk, int length) {
         assert chunk != null;
-
         this.chunk = chunk;
         handle = 0;
         memory = chunk.memory;
@@ -82,6 +81,11 @@ abstract class PooledByteBuf<T> extends AbstractReferenceCountedByteBuf {
         return length;
     }
 
+    /**
+     * 重新申请容量
+     * @param newCapacity
+     * @return
+     */
     @Override
     public final ByteBuf capacity(int newCapacity) {
         ensureAccessible();
@@ -162,13 +166,19 @@ abstract class PooledByteBuf<T> extends AbstractReferenceCountedByteBuf {
 
     protected abstract ByteBuffer newInternalNioBuffer(T memory);
 
+    /**
+     * buffer release()的时候会调用deallocate回收对应的资源
+     *
+     */
     @Override
     protected final void deallocate() {
         if (handle >= 0) {
             final long handle = this.handle;
             this.handle = -1;
             memory = null;
+            // 释放buffer持有的内存块
             chunk.arena.free(chunk, handle, maxLength, cache);
+            // 回收对象，供重复使用
             recycle();
         }
     }
