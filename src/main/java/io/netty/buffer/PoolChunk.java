@@ -20,24 +20,36 @@ package io.netty.buffer;
  * Description of algorithm for PageRun/PoolSubpage allocation from PoolChunk
  *
  * Notation: The following terms are important to understand the code
+ * 注： 下面的条款对于理解下面的代码非常重要
  * > page  - a page is the smallest unit of memory chunk that can be allocated
+ * > page - page是chunk可以分配最小的内存单元
  * > chunk - a chunk is a collection of pages
+ * > chunk - chunk 是pages的集合
  * > in this code chunkSize = 2^{maxOrder} * pageSize
+ * > 在下面的代码中：chunkSize = 2^{maxOrder} * pageSize
  *
  * To begin we allocate a byte array of size = chunkSize
+ * 首先，我们分配一个大小为chunkSize的字节数组
  * Whenever a ByteBuf of given size needs to be created we search for the first position
+ * 当一个给定大小的ByteBuf需要被创建时，我们查找字节数组的第一个位置，它有足够的空间可以容纳ByteBuf创建需要的大小
  * in the byte array that has enough empty space to accommodate the requested size and
  * return a (long) handle that encodes this offset information, (this memory segment is then
+ *
  * marked as reserved so it is always used by exactly one ByteBuf and no more)
+ * 这个片段的内存标记为保留，所以常被用作一个具体的ByteBuf
  *
  * For simplicity all sizes are normalized according to PoolArena#normalizeCapacity method
+ * 简单来说，所有的sizes都依照PoolArena#normalizeCapacity 方法的标准
  * This ensures that when we request for memory segments of size >= pageSize the normalizedCapacity
+ * 这确保了内存片段分配的的size >= pageSize the normalizedCapacity
  * equals the next nearest power of 2
  *
  * To search for the first offset in chunk that has at least requested size available we construct a
+ * 为了查找chunk的第一个offset能够分配给每一个请求合适的大小，我们构造了一颗完全平衡二叉树，把它存在一个array（just like heaps）- memoryMap
  * complete balanced binary tree and store it in an array (just like heaps) - memoryMap
  *
  * The tree looks like this (the size of each node being mentioned in the parenthesis)
+ * 这个完全平衡二叉树像这样（每个节点的size记录在下面括号里面）
  *
  * depth=0        1 node (chunkSize)
  * depth=1        2 nodes (chunkSize/2)
