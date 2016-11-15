@@ -270,6 +270,7 @@ public abstract class ByteBuf implements ReferenceCounted, Comparable<ByteBuf> {
     public abstract int maxCapacity();
 
     /**
+     * 返回分配器(PoolByteBufAllocator&UnpoolByteBufAllocator)，抽象的方法，不同的实现返回不同的buffer分配器
      * Returns the {@link ByteBufAllocator} which created this buffer.
      */
     public abstract ByteBufAllocator alloc();
@@ -306,6 +307,7 @@ public abstract class ByteBuf implements ReferenceCounted, Comparable<ByteBuf> {
     public abstract ByteBuf unwrap();
 
     /**
+     * 返回是否堆外buffer
      * Returns {@code true} if and only if this buffer is backed by an
      * NIO direct buffer.
      */
@@ -327,6 +329,7 @@ public abstract class ByteBuf implements ReferenceCounted, Comparable<ByteBuf> {
     public abstract int readerIndex();
 
     /**
+     * 设置buffer{@code readIndex}
      * Sets the {@code readerIndex} of this buffer.
      *
      * @throws IndexOutOfBoundsException
@@ -459,6 +462,7 @@ public abstract class ByteBuf implements ReferenceCounted, Comparable<ByteBuf> {
     public abstract ByteBuf clear();
 
     /**
+     * 标记当前的buffer的readerIndex，你可以通过调用resertReaderIndex()方法复位当前readerIndex.readerIndex的初始值是{@code 0}
      * Marks the current {@code readerIndex} in this buffer.  You can
      * reposition the current {@code readerIndex} to the marked
      * {@code readerIndex} by calling {@link #resetReaderIndex()}.
@@ -477,6 +481,7 @@ public abstract class ByteBuf implements ReferenceCounted, Comparable<ByteBuf> {
     public abstract ByteBuf resetReaderIndex();
 
     /**
+     * 标记这个buffer的当前writerIndex，你可以通过resertWriterIndex()方法复位writerIndex，writerIndex的初始值为{@code 0}
      * Marks the current {@code writerIndex} in this buffer.  You can
      * reposition the current {@code writerIndex} to the marked
      * {@code writerIndex} by calling {@link #resetWriterIndex()}.
