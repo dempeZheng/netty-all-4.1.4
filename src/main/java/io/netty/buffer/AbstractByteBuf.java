@@ -825,7 +825,8 @@ public abstract class AbstractByteBuf extends ByteBuf {
             return Unpooled.EMPTY_BUFFER;
         }
 
-        ByteBuf buf = alloc().buffer(length, maxCapacity);
+        ByteBuf buf =
+                alloc().buffer(length, maxCapacity);
         buf.writeBytes(this, readerIndex, length);
         readerIndex += length;
         return buf;

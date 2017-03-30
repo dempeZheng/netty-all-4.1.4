@@ -114,6 +114,7 @@ public abstract class AbstractNioByteChannel extends AbstractNioChannel {
             boolean close = false;
             try {
                 do {
+                    //这里分配一个buffer，会优先从thread local中获取
                     byteBuf = allocHandle.allocate(allocator);
                     allocHandle.lastBytesRead(doReadBytes(byteBuf));
                     if (allocHandle.lastBytesRead() <= 0) {

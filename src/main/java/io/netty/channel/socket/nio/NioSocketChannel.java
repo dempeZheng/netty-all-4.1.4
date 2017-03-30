@@ -416,6 +416,7 @@ public class NioSocketChannel extends AbstractNioByteChannel implements io.netty
             }
 
             // Release the fully written buffers, and update the indexes of the partially written buffer.
+            // 释放bytebuf的引用
             in.removeBytes(writtenBytes);
 
             if (!done) {
